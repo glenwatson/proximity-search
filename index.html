@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+	<head>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		<title>NNS</title>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script src="algo.js"></script>
+		<style>
+		</style>
+	</head>
+	<body>
+		<svg style="width:800px; height:800px"></svg>
+		<script>
+		
+			var searchTerm = {x:30, y:30};
+			var range = 10;
+			console.log(search(searchTerm, range));
+			
+			function updateOutput() {
+				
+				d3.select('svg')
+					.append('rect')
+					.attr('x', (searchTerm.x - range)*8)
+					.attr('y', 0)
+					.attr('width', 2*8*range)
+					.attr('height', '800px')
+					.attr('fill', 'red');
+					
+				d3.select('svg')
+					.append('rect')
+					.attr('x', 0)
+					.attr('y', (searchTerm.y - range)*8)
+					.attr('width', '800px')
+					.attr('height', 2*8*range)
+					.attr('fill', 'red');
+				
+				
+				var d = d3.select('svg')
+					.selectAll('circle')
+					.data(elements);
+				d.enter()
+					.append('circle')
+					.text(function(a) {return a.x+' '+a.y+' ('+a.id+')';})
+					.attr('cx', function(a){return a.x*8;})
+					.attr('cy', function(a){return a.y*8;})
+					.attr('fill', 'blue')
+					.attr('r', '3')
+					.text(function(a) {return a.id+' ('+a.x+' '+a.y+')';});
+				d.exit()
+					.remove();
+				
+				
+				d3.select('svg')
+					.append('circle')
+					.attr('cx', searchTerm.x*8)
+					.attr('cy', searchTerm.y*8)
+					.attr('r', '2')
+					.attr('fill', 'white');
+				
+			}
+			//update();
+			updateOutput();
+		</script>
+	</body>
+</html>
