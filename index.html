@@ -24,7 +24,7 @@
 			for (var i=0; i<100; i++) {
 				pts.push({id: i, x:Math.floor(Math.random() * 100), y:Math.floor(Math.random() * 100)});
 			}
-			nns = updateNns(pts);
+			nns = proximityNns(pts);
 			
 			function go() {
 				searchTerm.x = parseInt(document.getElementById('termX').value);

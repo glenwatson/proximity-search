@@ -1,4 +1,4 @@
-function updateNns(elements) {
+function proximityNns(elements) {
 	var sortedX, //Array sorted on .x
 		sortedY; //Array sorted on .y
 	/*
@@ -73,7 +73,7 @@ function updateNns(elements) {
 	
 	/*
 	 * Called with the initial elements to be sorted
-	 * @param elements (array) - the elements in the search space. In the form {x: ?, y: ?}
+	 * @param elements (array) - the elements in the search space. In the form {id: ?, x: ?, y: ?}
 	 */
 	function init(elements) {
 		sortedX = elements
