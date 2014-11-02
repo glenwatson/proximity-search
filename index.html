@@ -10,20 +10,35 @@
 	</head>
 	<body>
 		<svg style="width:800px; height:800px"></svg>
+		Point.x: <input id="termX" type="text" value="30" />
+		Point.Y: <input id="termY" type="text" value="30" />
+		Range: <input id="range" type="text" value="10" />
+		<button onclick="go();">Search</button>
 		<script>
+			var searchTerm = {x:30, y:30},
+				range = 10,
+				pts = [],
+				nns;
 			
-
-			var pts = [];
-			for (var i=0; i<100; i++) {
+			for (var i=0; i<10000; i++) {
 				pts.push({id: i, x:Math.floor(Math.random() * 100), y:Math.floor(Math.random() * 100)});
 			}
 			
-			var searchTerm = {x:30, y:30};
-			var range = 10;
+			function go() {
+				searchTerm.x = parseInt(document.getElementById('termX').value);
+				searchTerm.y = parseInt(document.getElementById('termY').value);
+				range = parseInt(document.getElementById('range').value);
+				
+				nns = updateNns(pts)
+				//nns.update();
+				updateOutput();
+			}
+			go();
 			
 			function updateOutput() {
 				var nearPts = nns.search(searchTerm, range);
-				console.log(nearPts);
+				d3.select('svg').selectAll('circle').remove();
+				d3.select('svg').selectAll('rect').remove();
 				//vert rect
 				d3.select('svg')
 					.append('rect')
@@ -62,14 +77,10 @@
 					.append('circle')
 					.attr('cx', searchTerm.x*8)
 					.attr('cy', searchTerm.y*8)
-					.attr('r', '2')
+					.attr('r', '1')
 					.attr('fill', 'white');
 				
 			}
-			
-			var nns = updateNns(pts)
-			//nns.update();
-			updateOutput();
 		</script>
 	</body>
 </html>
