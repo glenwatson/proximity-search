@@ -1,97 +1,142 @@
-//binary search
-/*
- * binary search that rounds fraction-indexes up
- * e.g. - [0,2].binarySearchUpper(1) === 1
- */
-Array.prototype.binarySearchUpper = function(val, cmp) {
-	var low = 0, high = this.length;
-	var mid = -1, c = 0;
-	while(low < high)	{
-		mid = ~~((low + high)/2); //Math.floor()
-		c = cmp(this[mid], val);
-		if(c < 0)	{
-			low = mid + 1;
-		} else if(c > 0) {
-			high = mid;
-		} else {
-			return mid;
-		}
-		//console.log("mid=" + mid + ", c=" + c + ", low=" + low + ", high=" + high);
-	}
-	return low;
-}
-/*
- * binary search that rounds fraction-indexes down
- * e.g. - [0,2].binarySearchUpper(1) === 0
- */
-Array.prototype.binarySearchLower = function(val, cmp) {
-	var low = -1, high = this.length-1;
-	var mid = -1, c = 0;
-	while(low < high)	{
-		mid = Math.ceil((low + high)/2);
-		c = cmp(this[mid], val);
-		if(c < 0)	{
-			low = mid;
-		} else if(c > 0) {
-			high = mid - 1;
-		} else {
-			return mid;
-		}
-		//console.log("mid=" + mid + ", c=" + c + ", low=" + low + ", high=" + high);
-	}
-	return low;
-}
-
-function compareProp(prop) {
-	return function(a, b) { return a[prop] - b[prop] };
-}
-function get(prop) {
-	return function(x) {return x[prop];};
-}
-var sortedX, sortedY;
-function init(elements) {
-	sortedX = elements.map(function(x){ return x; }).sort(compareProp('x'));
-	sortedY = elements.map(function(x){ return x; }).sort(compareProp('y'));
-}
-
-//called after any elements have been updated
-function updateSorted() {
-	sortedX.sort(compareProp('x')); //almost sorted
-	sortedX.sort(compareProp('y')); //almost sorted
-}
-
-function search(needle, range) {
-	var lowIdxX = sortedX.binarySearchUpper({x:needle.x - range}, compareProp('x'));
-	var highIdxX = sortedX.binarySearchLower({x:needle.x + range}, compareProp('x'));
-	
-	var lowIdxY = sortedY.binarySearchUpper({y:needle.y - range}, compareProp('y'));
-	var highIdxY = sortedY.binarySearchLower({y:needle.y + range}, compareProp('y'));
-	
-	//hash the smaller set
+function updateNns(elements) {
+	var sortedX, //Array sorted on .x
+		sortedY; //Array sorted on .y
 	/*
-	if (resultsX.length < resultsY.length) {
-		var smallerResults = resultsX;
-		var largerResults = resultsY;
-	} else {
-		var largerResults = resultsX;
-		var smallerResults = resultsY;
-	}
-	*/
-	//construct hash
-	var smallestResultHash = {};
-	var i = lowIdxX;
-	while (i <= highIdxX) {
-		smallestResultHash[sortedX[i].id] = true;
-		i++;
-	}
-	//return the intersection
-	var intersection = [];
-	i = lowIdxY;
-	while (i <= highIdxY) {
-		if (smallestResultHash[sortedY[i].id]) {
-			intersection.push(sortedY[i]);
+	 * binary search that rounds fraction-indexes up
+	 * e.g. - binarySearchUpper([0,2], 1) === 1
+	 */
+	function binarySearchUpper(arr, val, cmp) {
+		var low = 0, high = arr.length;
+		var mid = -1, c = 0;
+		while(low < high)	{
+			mid = ~~((low + high)/2); //Math.floor()
+			c = cmp(arr[mid], val);
+			if(c < 0)	{
+				low = mid + 1;
+			} else if(c > 0) {
+				high = mid;
+			} else {
+				return mid;
+			}
+			//console.log("mid=" + mid + ", c=" + c + ", low=" + low + ", high=" + high);
 		}
-		i++;
+		return low;
+	};
+	/*
+	 * binary search that rounds fraction-indexes down
+	 * e.g. - binarySearchUpper([0,2], 1) === 0
+	 */
+	function binarySearchLower(arr, val, cmp) {
+		var low = -1, high = arr.length-1;
+		var mid = -1, c = 0;
+		while(low < high)	{
+			mid = Math.ceil((low + high)/2);
+			c = cmp(arr[mid], val);
+			if(c < 0)	{
+				low = mid;
+			} else if(c > 0) {
+				high = mid - 1;
+			} else {
+				return mid;
+			}
+			//console.log("mid=" + mid + ", c=" + c + ", low=" + low + ", high=" + high);
+		}
+		return low;
+	};
+	
+	/*
+	 * Insertion sort on an array
+	 * Used since it is fast on almost sorted arrays
+	 */
+	function insertionSort(arr, cmp) {
+		var len = arr.length, 
+			i = -1, 
+			j, 
+			tmp;
+		
+		while (len--) {
+			tmp = arr[++i];
+			j = i;
+			while (j-- && cmp(arr[j], tmp) < 0) {
+				arr[j + 1] = arr[j];
+			}
+			arr[j + 1] = tmp;
+		}
+	};
+	
+	/*
+	 * Returns a function that compares the passed in property
+	 */
+	function compareProp(prop) {
+		return function(a, b) { return a[prop] - b[prop] };
 	}
-	return intersection;
+	
+	/*
+	 * Called with the initial elements to be sorted
+	 * @param elements (array) - the elements in the search space. In the form {x: ?, y: ?}
+	 */
+	function init(elements) {
+		sortedX = elements
+			.map(function(x){ return x; }) //copy the array
+			.sort(compareProp('x')); //sort on x
+		sortedY = elements
+			.map(function(x){ return x; }) //copy the array
+			.sort(compareProp('y')); //sort on y
+	}
+	
+	/*
+	 * Called after any element that was passed to init() has been updated
+	 */
+	function update() {
+		insertionSort(sortedX, compareProp('x')); //almost sorted
+		insertionSort(sortedY, compareProp('y')); //almost sorted
+	}
+	
+	/*
+	 * Searches the elements
+	 * @param needle (object) - the point to search from. In the form {x: ?, y: ?}
+	 * @param range (int) - the distance from needle to search
+	 */
+	function search(needle, range) {
+		var lowIdxX = binarySearchUpper(sortedX, {x:needle.x - range}, compareProp('x'));
+		var highIdxX = binarySearchLower(sortedX, {x:needle.x + range}, compareProp('x'));
+		
+		var lowIdxY = binarySearchUpper(sortedY, {y:needle.y - range}, compareProp('y'));
+		var highIdxY = binarySearchLower(sortedY, {y:needle.y + range}, compareProp('y'));
+		
+		//hash the smaller set
+		/*
+		if (resultsX.length < resultsY.length) {
+			var smallerResults = resultsX;
+			var largerResults = resultsY;
+		} else {
+			var largerResults = resultsX;
+			var smallerResults = resultsY;
+		}
+		*/
+		//construct hash
+		var smallestResultHash = {};
+		var i = lowIdxX;
+		while (i <= highIdxX) {
+			smallestResultHash[sortedX[i].id] = true;
+			i++;
+		}
+		//return the intersection
+		var intersection = [];
+		i = lowIdxY;
+		while (i <= highIdxY) {
+			if (smallestResultHash[sortedY[i].id]) {
+				intersection.push(sortedY[i]);
+			}
+			i++;
+		}
+		return intersection;
+	}
+	
+	init(elements);
+	
+	return {
+		search: search,
+		update: update,
+	};
 }

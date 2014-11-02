@@ -22,7 +22,7 @@
 			var range = 10;
 			
 			function updateOutput() {
-				var nearPts = search(searchTerm, range);
+				var nearPts = nns.search(searchTerm, range);
 				console.log(nearPts);
 				//vert rect
 				d3.select('svg')
@@ -67,8 +67,8 @@
 				
 			}
 			
-			init(pts);
-			//update();
+			var nns = updateNns(pts)
+			//nns.update();
 			updateOutput();
 		</script>
 	</body>
