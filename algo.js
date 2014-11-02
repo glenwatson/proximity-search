@@ -57,7 +57,7 @@ function updateNns(elements) {
 		while (len--) {
 			tmp = arr[++i];
 			j = i;
-			while (j-- && cmp(arr[j], tmp) < 0) {
+			while (j-- && cmp(arr[j], tmp) > 0) {
 				arr[j + 1] = arr[j];
 			}
 			arr[j + 1] = tmp;
