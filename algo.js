@@ -42,25 +42,22 @@ Array.prototype.binarySearchLower = function(val, cmp) {
 	return low;
 }
 
-
-var elements = [];
-for (var i=0; i<100; i++) {
-	elements.push({id: i, x:Math.floor(Math.random() * 100), y:Math.floor(Math.random() * 100)});
-}
-
 function compareProp(prop) {
 	return function(a, b) { return a[prop] - b[prop] };
 }
 function get(prop) {
 	return function(x) {return x[prop];};
 }
+var sortedX, sortedY;
+function init(elements) {
+	sortedX = elements.map(function(x){ return x; }).sort(compareProp('x'));
+	sortedY = elements.map(function(x){ return x; }).sort(compareProp('y'));
+}
 
-var sortedX = elements.map(function(x){ return x; }).sort(compareProp('x'));
-var sortedY = elements.map(function(x){ return x; }).sort(compareProp('y'));
-
-function update() {
-	sortedX = elements.sort(compareProp('x')); //almost sorted
-	sortedY = elements.sort(compareProp('y')); //almost sorted
+//called after any elements have been updated
+function updateSorted() {
+	sortedX.sort(compareProp('x')); //almost sorted
+	sortedX.sort(compareProp('y')); //almost sorted
 }
 
 function search(needle, range) {

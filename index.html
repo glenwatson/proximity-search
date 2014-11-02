@@ -11,13 +11,20 @@
 	<body>
 		<svg style="width:800px; height:800px"></svg>
 		<script>
-		
+			
+
+			var pts = [];
+			for (var i=0; i<100; i++) {
+				pts.push({id: i, x:Math.floor(Math.random() * 100), y:Math.floor(Math.random() * 100)});
+			}
+			
 			var searchTerm = {x:30, y:30};
 			var range = 10;
-			console.log(search(searchTerm, range));
 			
 			function updateOutput() {
-				
+				var nearPts = search(searchTerm, range);
+				console.log(nearPts);
+				//vert rect
 				d3.select('svg')
 					.append('rect')
 					.attr('x', (searchTerm.x - range)*8)
@@ -25,7 +32,8 @@
 					.attr('width', 2*8*range)
 					.attr('height', '800px')
 					.attr('fill', 'red');
-					
+				
+				//horizonal rect
 				d3.select('svg')
 					.append('rect')
 					.attr('x', 0)
@@ -34,22 +42,22 @@
 					.attr('height', 2*8*range)
 					.attr('fill', 'red');
 				
-				
+				//elements
 				var d = d3.select('svg')
 					.selectAll('circle')
-					.data(elements);
+					.data(pts);
 				d.enter()
 					.append('circle')
 					.text(function(a) {return a.x+' '+a.y+' ('+a.id+')';})
 					.attr('cx', function(a){return a.x*8;})
 					.attr('cy', function(a){return a.y*8;})
-					.attr('fill', 'blue')
+					.attr('fill', function(a) {return nearPts.indexOf(a) === -1 ? 'blue' : '#cc22cc';})
 					.attr('r', '3')
 					.text(function(a) {return a.id+' ('+a.x+' '+a.y+')';});
 				d.exit()
 					.remove();
 				
-				
+				// search dot
 				d3.select('svg')
 					.append('circle')
 					.attr('cx', searchTerm.x*8)
@@ -58,6 +66,8 @@
 					.attr('fill', 'white');
 				
 			}
+			
+			init(pts);
 			//update();
 			updateOutput();
 		</script>
