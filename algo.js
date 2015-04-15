@@ -3,9 +3,9 @@ function proximityNns(elements) {
 		sortedY; //Array sorted on .y
 	/*
 	 * binary search that rounds fraction-indexes up
-	 * e.g. - binarySearchUpper([0,2], 1) === 1
+	 * e.g. - binarySearchRoundUp([0,2], 1) === 1
 	 */
-	function binarySearchUpper(arr, val, cmp) {
+	function binarySearchRoundUp(arr, val, cmp) {
 		var low = 0, high = arr.length;
 		var mid = -1, c = 0;
 		while(low < high)	{
@@ -24,9 +24,9 @@ function proximityNns(elements) {
 	};
 	/*
 	 * binary search that rounds fraction-indexes down
-	 * e.g. - binarySearchUpper([0,2], 1) === 0
+	 * e.g. - binarySearchRoundUp([0,2], 1) === 0
 	 */
-	function binarySearchLower(arr, val, cmp) {
+	function binarySearchRoundDown(arr, val, cmp) {
 		var low = -1, high = arr.length-1;
 		var mid = -1, c = 0;
 		while(low < high)	{
@@ -98,14 +98,14 @@ function proximityNns(elements) {
 	 * @param range (int) - the distance from needle to search
 	 */
 	function search(needle, range) {
-		var lowIdxX = binarySearchUpper(sortedX, {x:needle.x - range}, compareProp('x'));
-		var highIdxX = binarySearchLower(sortedX, {x:needle.x + range}, compareProp('x'));
+		var lowIdxX = binarySearchRoundUp(sortedX, {x:needle.x - range}, compareProp('x'));
+		var highIdxX = binarySearchRoundDown(sortedX, {x:needle.x + range}, compareProp('x'));
 		
-		var lowIdxY = binarySearchUpper(sortedY, {y:needle.y - range}, compareProp('y'));
-		var highIdxY = binarySearchLower(sortedY, {y:needle.y + range}, compareProp('y'));
+		var lowIdxY = binarySearchRoundUp(sortedY, {y:needle.y - range}, compareProp('y'));
+		var highIdxY = binarySearchRoundDown(sortedY, {y:needle.y + range}, compareProp('y'));
 		
-		//hash the smaller set
 		/*
+		// optimization: hash the smaller set
 		if (resultsX.length < resultsY.length) {
 			var smallerResults = resultsX;
 			var largerResults = resultsY;
