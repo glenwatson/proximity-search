@@ -10,10 +10,12 @@
 	</head>
 	<body>
 		<svg style="width:800px; height:800px"></svg>
-		Point.x: <input id="termX" type="text" value="30" />
-		Point.Y: <input id="termY" type="text" value="30" />
-		Range: <input id="range" type="text" value="10" />
-		<button onclick="go();">Search</button>
+		<div>
+			Point.x: <input id="termX" type="text" value="30" />
+			Point.Y: <input id="termY" type="text" value="30" />
+			Range: <input id="range" type="text" value="10" />
+		</div>
+		<button onclick="readAndUpdate();">Search</button>
 		<button onclick="move();">Move</button>
 		<script>
 			var searchTerm = {x:30, y:30},
@@ -26,14 +28,14 @@
 			}
 			nns = proximityNns(pts);
 			
-			function go() {
+			function readAndUpdate() {
 				searchTerm.x = parseInt(document.getElementById('termX').value);
 				searchTerm.y = parseInt(document.getElementById('termY').value);
 				range = parseInt(document.getElementById('range').value);
 				
-				updateOutput();
+				updateSvg();
 			}
-			go();
+			readAndUpdate();
 			function move() {
 				var len = pts.length,
 					i,
@@ -52,10 +54,10 @@
 					}
 				}
 				nns.update();
-				go();
+				readAndUpdate();
 			}
 			
-			function updateOutput() {
+			function updateSvg() {
 				var nearPts = nns.search(searchTerm, range);
 				d3.select('svg').selectAll('circle').remove();
 				d3.select('svg').selectAll('rect').remove();

@@ -24,7 +24,7 @@ function proximityNns(elements) {
 	};
 	/*
 	 * binary search that rounds fraction-indexes down
-	 * e.g. - binarySearchRoundUp([0,2], 1) === 0
+	 * e.g. - binarySearchRoundDown([0,2], 1) === 0
 	 */
 	function binarySearchRoundDown(arr, val, cmp) {
 		var low = -1, high = arr.length-1;
@@ -98,12 +98,16 @@ function proximityNns(elements) {
 	 * @param range (int) - the distance from needle to search
 	 */
 	function search(needle, range) {
+		//get the lowest X value inside the range
 		var lowIdxX = binarySearchRoundUp(sortedX, {x:needle.x - range}, compareProp('x'));
+		//get the highest X value inside the range
 		var highIdxX = binarySearchRoundDown(sortedX, {x:needle.x + range}, compareProp('x'));
-		
+		//get the lowest Y value inside the range
 		var lowIdxY = binarySearchRoundUp(sortedY, {y:needle.y - range}, compareProp('y'));
+		//get the highest Y value inside the range
 		var highIdxY = binarySearchRoundDown(sortedY, {y:needle.y + range}, compareProp('y'));
 		
+		//intersect the arrays
 		/*
 		// optimization: hash the smaller set
 		if (resultsX.length < resultsY.length) {
@@ -132,11 +136,125 @@ function proximityNns(elements) {
 		}
 		return intersection;
 	}
+
+
+//WIP begin
+	function closestKTo(arr, k, needle, cmp) {
+			var closest = [], 
+				len = arr.length,
+				high, low,
+				highDist, lowDist;
+			high = binarySearchRoundUp(arr, needle, cmp);
+			low = high - 1;
+			if (high < len) {
+				highDist = cmp(arr[high], needle);
+			} else {
+				highDist = Infinity;
+			}
+			if (low >= 0) {
+				lowDist = cmp(needle, arr[low]);
+			} else {
+				lowDist = Infinity;
+			}
+			while (closest.length < k && (low >= 0 || high < len)) {
+				if (highDist < lowDist) {
+					closest.push(arr[high]);
+					high++;
+					if (high < len) {
+						highDist = cmp(arr[high], needle);
+					} else {
+						highDist = Infinity;
+					}
+				} else {
+					closest.push(arr[low]);
+					low--;
+					if (low >= 0) {
+						lowDist = cmp(needle, arr[low]);
+					} else {
+						lowDist = Infinity;
+					}
+				}
+			}
+			return closest;
+		};
+//tests
+		function arraysEqual(a, b) {
+			if (a === b) return true;
+			if (a == null || b == null) return false;
+			if (a.length != b.length) return false;
+
+			a.sort();
+			b.sort();
+
+			for (var i = 0; i < a.length; ++i) {
+				if (a[i] !== b[i]) return false;
+			}
+			return true;
+		}
+		function assertArraysEqual(a, b, msg) {
+			console.assert(arraysEqual(a, b), "'"+msg+"'  Expected ["+b+"] Actual ["+a+"]");
+		}
+		function testDist(a,b) { return a-b };
+		
+		;(function () {
+			assertArraysEqual(closestKTo([], 0, 0, testDist), [], "empty array");
+			assertArraysEqual(closestKTo([], 1, 55, testDist), [], "empty array");
+			assertArraysEqual(closestKTo([], 100, 55, testDist), [], "empty array");
+
+			assertArraysEqual(closestKTo([], -1, -1, testDist), [], "empty array");
+			assertArraysEqual(closestKTo([1], -1, -1, testDist), [], "bad input");
+			assertArraysEqual(closestKTo([1,2], -1, -1, testDist), [], "bad input");
+			assertArraysEqual(closestKTo([1,3,4,6], -1, -1, testDist), [], "bad input");
+
+			assertArraysEqual(closestKTo([], 0, 3, testDist), [], "k=0");
+			assertArraysEqual(closestKTo([1], 0, 3, testDist), [], "k=0");
+			assertArraysEqual(closestKTo([1,3], 0, 3, testDist), [], "k=0");
+			assertArraysEqual(closestKTo([1,3,4,6], 0, 3, testDist), [], "k=0");
+
+			assertArraysEqual(closestKTo([1], 1, 1, testDist), [1], "one and only one");
+			assertArraysEqual(closestKTo([1], 1, 0, testDist), [1], "one and only one");
+			assertArraysEqual(closestKTo([1], 1, 100, testDist), [1], "one and only one");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 3, testDist), [3], "Exact match");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 1, testDist), [1], "Exact match at beginng");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 4, testDist), [4], "Exact match");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 6, testDist), [6], "Exact match at end");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 2, testDist), [1], "Right in the middle");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 5, testDist), [4], "Right in the middle");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 0, testDist), [1], "Before first element");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 100, testDist), [6], "After last element");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 1.9, testDist), [1], "Should round down");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 2.1, testDist), [3], "Should round up");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 4.9, testDist), [4], "Should round down");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, 5.1, testDist), [6], "Should round up");
+			assertArraysEqual(closestKTo([1,3,4,6], 1, -1, testDist), [1], "Negative search");
+			
+			assertArraysEqual(closestKTo([1,3,4,6], 2, 2, testDist), [1,3], "Right in the middle, return 2");
+			assertArraysEqual(closestKTo([1,3,4,6], 2, 3, testDist), [3,4], "Exact match, return 2");
+			assertArraysEqual(closestKTo([1,3,4,6], 2, 0, testDist), [1,3], "Before first element, return 2");
+			assertArraysEqual(closestKTo([1,3,4,6], 2, 100, testDist), [4,6], "After last element, return 2");
+			
+			assertArraysEqual(closestKTo([1,3,4,6], 3, 100, testDist), [3,4,6], "After last element, return 3");
+			assertArraysEqual(closestKTo([1,3,4,6], 3, 0, testDist), [1,3,4], "Before first element, return 3");
+			assertArraysEqual(closestKTo([1,3,4,6], 3, 3, testDist), [1,3,4], "Exact match, return 3");
+			assertArraysEqual(closestKTo([2,3,4], 3, 3, testDist), [2,3,4], "Exact match in middle, return 3");
+			assertArraysEqual(closestKTo([1,2,3,4,5], 3, 3, testDist), [2,3,4], "Exact match in middle, return 3");
+			
+			assertArraysEqual(closestKTo([1,3,4,6], 4, 100, testDist), [1,3,4,6], "After last element, return all");
+			assertArraysEqual(closestKTo([1,3,4,6], 4, 0, testDist), [1,3,4,6], "Before first element, return all");
+			assertArraysEqual(closestKTo([1,3,4,6], 4, 3, testDist), [1,3,4,6], "Exact match, return all");
+			
+			assertArraysEqual(closestKTo([1,3,4,6], 100, 0, testDist), [1,3,4,6], "After last element, return more than array");
+			assertArraysEqual(closestKTo([1,3,4,6], 100, 100, testDist), [1,3,4,6], "Before first element, returnmore than array");
+			assertArraysEqual(closestKTo([1,3,4,6], 100, 3, testDist), [1,3,4,6], "Exact match, return more than array");
+		})();
+	
+//WIP end
 	
 	init(elements);
 	
 	return {
 		search: search,
 		update: update,
+		closestKTo: closestKTo,
 	};
 }

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>kth Nearest Neighbor Search</title>
+</head>
+<body>
+	<canvas id="space" width="500" height="500">No visualization</canvas>
+	<h1>Results</h1>
+    <div id="results"></div>
+	
+    <!-- Load and initialize the app. -->
+    <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> -->
+    <script type="text/javascript" src="kdTree-min.js"></script>
+    <script type="text/javascript" src="algo.js"></script>
+    <script type="text/javascript">
+		
+		var canvas = document.getElementById('space');
+		canvas.width = document.body.clientWidth;
+		canvas.height = document.body.clientHeight;
+		var ctx = canvas.getContext('2d');
+		function drawPoint(pt) {
+			ctx.beginPath();
+			ctx.arc(pt.x, pt.y, 4, 0, Math.PI*2, true);
+			ctx.fill();
+			ctx.closePath();
+		}
+		function drawCircle(c) {
+			ctx.beginPath();
+			ctx.arc(c.x, c.y, r, 0, Math.PI*2, true);
+			ctx.stroke();
+			ctx.closePath();
+		}
+
+		var points = [];
+		var POINT_COUNT = 100;
+		var MAX_VAL = Math.min(canvas.height, canvas.width);
+		var MIN_VAL = 0;
+		var K = 2;
+
+		var px = [];
+		var py = [];
+		var l = points.length;
+		for(var idx=0; idx<l; idx++) {
+			px.push(points[idx].x);
+			py.push(points[idx].y);
+		}
+		px.sort(function(a,b){return a-b;});
+		py.sort(function(a,b){return a-b;});
+		
+		// random point value
+		function rand() {
+			return Math.floor(Math.random() * (MAX_VAL - MIN_VAL) + MIN_VAL);
+		}
+		// distance formula
+		function dist(a, b) {
+			return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
+		}
+		function sortCmp(a, b) {
+			return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
+		}
+
+		// populate points
+		for(var i=0; i<POINT_COUNT; i++) {
+			var pt = {x:rand(), y:rand()};
+			points.push(pt);
+			drawPoint(pt);
+		}
+
+		// draw target point
+		var nnsPoint = {x:rand(), y:rand()};
+		ctx.fillStyle = '#ff0000'; //red
+		drawPoint(nnsPoint);
+
+
+		// init their code
+		var kdTreeJs = new kdTree(points, dist, ['x', 'y']);
+		var kdTreeResult = kdTreeJs.nearest(nnsPoint, K);
+		// draw their result
+		ctx.strokeStyle = '#ff00ff'; //purple
+		var r = 6;
+		kdTreeResult.map(function(x) {return x[0];}).forEach(drawCircle);
+
+
+		// my (naive) code
+		function naive() {
+			var closest = [];
+			var maxDist = Infinity;
+			for(var i in points) {
+				var d1 = dist(points[i], nnsPoint);
+				if(d1 < maxDist || closest.length < K) {
+					closest.push(points[i]);
+					maxDist = closest
+						.map(function(x){ return dist(x, nnsPoint);})
+						.reduce(function(x,y){return Math.max(x,y);});
+					if(closest.length > K) { //if we have more than K points,
+						//remove the farthest
+						var farthestDist = 0;
+						var farthestIdx = -1;
+						for(var c in closest) {
+							var d = dist(closest[c], nnsPoint); //recalculate distance
+							if(d > farthestDist) {
+								farthestDist = d;
+								farthestIdx = c;
+							}
+						}
+						closest.splice(farthestIdx, 1); //remove
+					}
+				}
+			}
+			return closest;
+		}
+		var r = 9;
+		ctx.strokeStyle = '#00FFFF'; //light blue
+		naive().forEach(drawCircle);
+		var r = 12;
+		ctx.strokeStyle = '#00FF00'; //light green
+		points.sort(dist);
+		//my improved code
+		proximityNns([]).closestKTo(points, K, nnsPoint, dist).forEach(drawCircle);
+		
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

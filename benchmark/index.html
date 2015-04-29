@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>kth Nearest Neighbor Search</title>
+</head>
+<body>
+	<h1>Results</h1>
+    <div id="results"></div>
+
+    <!-- Load and initialize the app. -->
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="benchmark.js"></script>
+	<script src="lodash.min.js"></script>
+    <script type="text/javascript" src="../kdTree-min.js"></script>
+    <script type="text/javascript">
+		function out(s) {
+			console.log(s);
+	        $('#results').append('<p>'+s+'</p>');
+		}
+
+		var points = [];
+		var POINT_COUNT = 1000;
+		var MAX_VAL = 1000;
+		var MIN_VAL = 0;
+		var K = 10;
+		function rand() {
+			return Math.random() * (MAX_VAL - MIN_VAL) + MIN_VAL;
+		}
+		function dist(a, b) {
+			return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
+		}
+		for(var i=0; i<POINT_COUNT; i++) {
+			points.push({x:rand(), y:rand()});
+		}
+		var nnsPoint = {x:rand(), y:rand()};
+		var kdTreeJs;
+		var dims = ['x', 'y'];
+		
+
+
+
+		var suite = new Benchmark.Suite('init');
+
+		suite.add('naive#init', function() {
+			//none
+		})
+		.add('kdTreeJs#init', function() {
+			kdTreeJs = new kdTree(points, dist, dims);
+		})
+		// add listeners
+		.on('cycle', function(event) {
+			out(String(event.target));
+		})
+		.on('complete', function() {
+			out('Fastest is ' + this.filter('fastest').pluck('name'));
+		})
+		.run();
+
+
+
+
+		var suite = new Benchmark.Suite('nns');
+
+		suite.add('naive#nns', function() {
+			var closest = [];
+			var maxDist = Infinity;
+			for(var i in points) {
+				if(dist(points[i], nnsPoint) < maxDist) {
+					closest.push(points[i]);
+					if(closest.length > K) { //if we have more than K points,
+						//remove the farthest
+						var farthestDist = 0;
+						var farthestIdx = -1;
+						for(var c in closest) {
+							var d = dist(closest[c], nnsPoint); //recalculate distance
+							if(d > farthestDist) {
+								farthestDist = d;
+							}
+						}
+						closest.splice(farthestIdx, 1); //remove
+					}
+				}
+			}
+			//return closest;
+			return closest;
+		})
+		.add('kdTreeJs#nns', function() {
+			return kdTreeJs.nearest(nnsPoint, K);
+		})
+		// add listeners
+		.on('cycle', function(event) {
+			out(String(event.target));
+		})
+		.on('complete', function() {
+			out('Fastest is ' + this.filter('fastest').pluck('name'));
+		})
+		.run();
+
+
+
+
+
+    </script>
+</body>
+</html>
